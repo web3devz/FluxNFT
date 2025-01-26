@@ -62,7 +62,7 @@ contract DynamicAIGCNFT is ERC721, IERC7007, Ownable {
         bytes calldata aigcData,
         bytes calldata proof
     ) external override onlyOwner {
-        require(super._exists(tokenId), "Token does not exist");  // Use super._exists instead of _exists
+        require(_exists(tokenId), "Token does not exist");
         AigcContent storage content = _aigcContents[tokenId];
         content.prompt = prompt;
         content.aigcData = aigcData;
@@ -83,7 +83,7 @@ contract DynamicAIGCNFT is ERC721, IERC7007, Ownable {
 
     // Automatically transform the NFT after the specified time
     function transformAfterTime(uint256 tokenId) external {
-        require(super._exists(tokenId), "Token does not exist");  // Use super._exists instead of _exists
+        require(_exists(tokenId), "Token does not exist");
         AigcContent storage content = _aigcContents[tokenId];
         require(block.timestamp >= content.transformTime, "Transformation time not reached");
         require(!content.transformed, "Already transformed");
@@ -97,28 +97,16 @@ contract DynamicAIGCNFT is ERC721, IERC7007, Ownable {
 
     // Evolve NFT on interaction (e.g., transfer)
     function evolveOnInteraction(uint256 tokenId, bytes calldata newAigcData) internal {
-        require(super._exists(tokenId), "Token does not exist");  // Use super._exists instead of _exists
+        require(_exists(tokenId), "Token does not exist");
         AigcContent storage content = _aigcContents[tokenId];
         content.aigcData = newAigcData;
         emit Transformed(tokenId, newAigcData);
     }
 
-    // Override transfer function to trigger evolution on transfer
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-
-        // Trigger evolution with new AIGC data
-        evolveOnInteraction(tokenId, abi.encodePacked("New AI data after transfer"));
-    }
-
+   
     // Get the token URI, allowing dynamic updates
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(super._exists(tokenId), "Token does not exist");  // Use super._exists instead of _exists
+        require(_exists(tokenId), "Token does not exist");
         AigcContent memory content = _aigcContents[tokenId];
 
         // Return different metadata based on transformation status
@@ -131,7 +119,7 @@ contract DynamicAIGCNFT is ERC721, IERC7007, Ownable {
 
     // Burn a token and clean up its data
     function burn(uint256 tokenId) external onlyOwner {
-        require(super._exists(tokenId), "Token does not exist");  // Use super._exists instead of _exists
+        require(_exists(tokenId), "Token does not exist");
         delete _aigcContents[tokenId];
         _burn(tokenId);
     }
